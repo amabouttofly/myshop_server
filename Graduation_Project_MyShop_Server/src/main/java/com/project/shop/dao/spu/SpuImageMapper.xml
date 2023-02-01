@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.spu.SpuImageMapper">
+
+    <delete id="deleteSpuImageBySpu">
+        delete from spu_image
+        where id not in
+        <foreach item="item" collection="spuImageList"
+                 open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+        and spuId = #{id}
+    </delete>
+
+    <insert id="addSpuImage" keyProperty="id" useGeneratedKeys="true">
+        insert into spu_image(imageName, imageUrl, spuId)
+        values(#{imageName}, #{imageUrl}, #{spuId})
+    </insert>
+</mapper>

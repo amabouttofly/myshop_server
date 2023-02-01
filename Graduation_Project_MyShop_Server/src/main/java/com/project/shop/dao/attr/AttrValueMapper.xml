@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.attr.AttrValueMapper">
+    <insert id="addAttrValueList">
+        insert into attr_value(id, attrValueName, attrId)
+        values
+        <foreach item="item" collection="list" index="index"
+                 separator=",">
+            (#{item.id}, #{item.attrValueName}, #{item.attrId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteAttrValueList">
+        delete from attr_value
+        where attrId = #{attrId}
+        and id not in
+        <foreach collection="attrValueList" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+</mapper>

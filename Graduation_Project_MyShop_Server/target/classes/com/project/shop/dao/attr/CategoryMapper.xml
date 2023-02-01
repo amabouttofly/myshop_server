@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.attr.CategoryMapper">
+    <select id="getAllLevelCategoryList" resultMap="categoryWithChild">
+        select f.*,
+               s.id as s_id,s.name as s_name,
+               t.id as t_id,t.name as t_name
+        from category_first f left outer join category_second s on (f.id=s.category1Id)
+        left outer join category_third t on (s.id=t.category2Id)
+    </select>
+
+    <resultMap id="categoryWithChild" type="categoryWithChild">
+        <id property="categoryId" column="id"/>
+        <result property="categoryName" column="name"/>
+        <collection property="categoryChild" ofType="categoryWithChild">
+            <id property="categoryId" column="s_id"/>
+            <result property="categoryName" column="s_name"/>
+            <collection property="categoryChild" ofType="categoryWithChild">
+                <id property="categoryId" column="t_id"/>
+                <result property="categoryName" column="t_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getCategory3IdByAllLevel" resultType="java.lang.Integer">
+        select t.id
+        from category_first f,category_second s,category_third t
+        where f.id=s.category1Id
+        and s.id=t.category2Id
+        <if test="category1Id !=null">
+          and f.id=#{category1Id}
+        </if>
+        <if test="category2Id !=null">
+          and s.id=#{category2Id}
+        </if>
+        <if test="category3Id !=null">
+          and t.id=#{category3Id}
+        </if>
+        limit 0, 1
+    </select>
+
+    <select id="getCategoryView" resultMap="categoryView">
+        select f.*,
+               s.id as s_id,s.name as s_name,
+               t.id as t_id,t.name as t_name
+        from category_first f,category_second s,category_third t
+        where f.id=s.category1Id
+        and s.id=t.category2Id
+        and t.id = #{category3Id}
+    </select>
+    <resultMap id="categoryView" type="com.project.shop.pojo.sql.CategoryViewSqlResult">
+        <result property="category1Id" column="id"/>
+        <result property="category1Name" column="name"/>
+        <result property="category2Id" column="s_id"/>
+        <result property="category2Name" column="s_name"/>
+        <result property="category3Id" column="t_id"/>
+        <result property="category3Name" column="t_name"/>
+    </resultMap>
+</mapper>

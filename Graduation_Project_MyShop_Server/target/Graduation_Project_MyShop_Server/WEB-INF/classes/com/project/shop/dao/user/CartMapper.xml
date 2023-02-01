@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.user.CartMapper">
+
+    <insert id="addCart">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from cart_list
+        </selectKey>
+        INSERT INTO cart_list(id, userId, isChecked, cartPrice, skuNum, skuId, skuName, skuPrice, imageUrl)
+        VALUES (#{id}, #{userId}, #{isChecked}, #{cartPrice}, #{skuNum}, #{skuId}, #{skuName}, #{skuPrice}, #{imageUrl})
+    </insert>
+    <update id="updateCart">
+        update cart_list
+        set isChecked = #{isChecked}, cartPrice = #{cartPrice}, skuNum = #{skuNum}
+        where id = #{id}
+    </update>
+    <update id="setAllCartIsChecked">
+        update cart_list
+        set isChecked = #{isChecked}
+        where userId = #{userId}
+    </update>
+    <update id="setCartIsChecked">
+        update cart_list
+        set isChecked = #{isChecked}
+        where userId = #{userId}
+        and skuId = #{skuId}
+    </update>
+    <delete id="deleteCart">
+        delete from cart_list where userId = #{userId} and skuId = #{skuId}
+    </delete>
+    <delete id="deleteAllCheckedCart">
+        delete from cart_list where userId = #{userId} and isChecked = 1
+    </delete>
+    <delete id="deleteCartList">
+        delete from cart_list
+               where id in
+               <foreach collection="list" item="item" open="(" separator="," close=")">
+                   #{item.id}
+               </foreach>
+    </delete>
+</mapper>

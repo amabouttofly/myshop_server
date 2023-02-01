@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.attr.TrademarkMapper">
+
+    <select id="getTrademarkListInSkuList" resultType="com.project.shop.pojo.po.attr.Trademark">
+        select *
+        from trademark
+        where id in
+        <foreach collection="list" item="item"
+                 open="(" separator="," close=")">
+            #{item.tmId}
+        </foreach>
+    </select>
+
+    <select id="getLimitPage" resultType="com.project.shop.pojo.po.attr.Trademark">
+        select * from trademark
+        limit #{index},#{size}
+    </select>
+
+    <insert id="addTrademarkWithoutId" parameterType="trademark">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from trademark
+        </selectKey>
+        insert into trademark(id,tmName,logoUrl) values (#{id},#{tmName},#{logoUrl})
+    </insert>
+
+    <update id="updateTrademarkById" parameterType="trademark"
+            keyProperty="id" keyColumn="id">
+        update trademark set tmName=#{tmName},logoUrl=#{logoUrl} where id=#{id}
+    </update>
+
+</mapper>

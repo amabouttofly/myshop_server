@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.sku.SkuImageMapper">
+
+    <insert id="addSkuImageList">
+        insert into sku_image(id, spuImageId, isDefault, skuId, imageName, imageUrl)
+        values
+            <foreach item="item" collection="skuImageList" separator=",">
+                (#{item.id}, #{item.spuImageId}, #{item.isDefault}, #{id}, #{item.imageName}, #{item.imageUrl})
+            </foreach>
+    </insert>
+</mapper>

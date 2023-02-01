@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.attr.AttrMapper">
+
+    <select id="getAttrKeyListInSkuList" resultMap="AttrKeyList">
+        select k.*, v.id as vid, v.attrValueName, v.attrId
+        from attr_key k, attr_value v
+        where k.id = v.attrId
+        and k.categoryId = #{category3Id}
+        and categoryLevel = 3
+        <if test="skuAttrValueList != null">
+            and k.id not in
+            <foreach collection="skuAttrValueList" item="item"
+                     open="(" separator="," close=")">
+                #{item.attrKeyId}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getAttrKeyListByCategory3Id" resultMap="AttrKeyList">
+        select k.*, v.id as vid, v.attrValueName, v.attrId
+        from attr_key k left outer join attr_value v
+        on k.id = v.attrId
+        where k.categoryId = #{category3Id}
+        and k.categoryLevel = 3
+    </select>
+    <resultMap id="AttrKeyList" type="attrKey">
+        <id property="id" column="id"/>
+        <result property="attrKeyName" column="attrKeyName"/>
+        <result property="categoryId" column="categoryId"/>
+        <result property="categoryLevel" column="categoryLevel"/>
+        <collection property="attrValueList" ofType="attrValue">
+            <id property="id" column="vid"/>
+            <result property="attrId" column="attrId"/>
+            <result property="attrValueName" column="attrValueName"/>
+        </collection>
+    </resultMap>
+
+    <insert id="addAttrKey" parameterType="attrKey">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from attr_key
+        </selectKey>
+        insert into attr_key(id, attrKeyName, categoryId, categoryLevel)
+        values(#{id}, #{attrKeyName}, #{categoryId}, #{categoryLevel})
+    </insert>
+
+    <update id="updateAttrKeyName">
+        update attr_key
+        set attrKeyName = #{attrKeyName}
+        where id = #{id}
+    </update>
+</mapper>

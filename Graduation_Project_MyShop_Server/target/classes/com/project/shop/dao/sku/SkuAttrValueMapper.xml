@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.sku.SkuAttrValueMapper">
+
+    <insert id="addSkuAttrValueMapper">
+        insert into sku_attr_value(id, attrKeyId, attrKeyName, skuId, attrValueId, attrValueName)
+        values
+        <foreach item="item" collection="skuAttrValueList" separator=",">
+            (#{item.id}, #{item.attrKeyId}, #{item.attrKeyName}, #{id}, #{item.attrValueId}, #{item.attrValueName})
+        </foreach>
+    </insert>
+</mapper>

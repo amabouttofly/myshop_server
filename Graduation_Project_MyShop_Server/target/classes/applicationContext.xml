@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <import resource="classpath:spring-dao.xml"/>
+    <import resource="classpath:spring-service.xml"/>
+    <import resource="classpath:spring-servlet.xml"/>
+
+    <!--读取多个.properties配置文件时,每个要加上ignore-unresolvable为true-->
+    <context:property-placeholder location="classpath:applicationContext.properties" ignore-unresolvable="true"/>
+    <bean id="alipayConfigProp" class="com.project.shop.common.MyAlipayConfigProp">
+        <property name="appId" value="${alipay.appId}"/>
+        <property name="alipayPublicKey" value="${alipay.alipayPublicKey}"/>
+        <property name="appPrivateKey" value="${alipay.appPrivateKey}"/>
+        <property name="notifyUrl" value="${alipay.notifyUrl}"/>
+    </bean>
+
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="smtp.qq.com"/>
+        <property name="port" value="25"/>
+        <property name="defaultEncoding" value="utf-8"/>
+        <property name="username" value="2960773179"/>
+        <property name="password" value="dggsksgnltqcdefg"/>
+    </bean>
+
+    <bean id="templateMessage" class="org.springframework.mail.SimpleMailMessage">
+        <property name="from" value="2960773179@qq.com"/>
+        <property name="subject" value="特产商城"/>
+    </bean>
+
+</beans>

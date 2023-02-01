@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.spu.SpuSaleAttrValueMapper">
+
+    <insert id="addSpuSaleAttrValueFormSpuSaleKeyList">
+        insert into spu_sale_attr_value(id, isChecked, saleAttrValueName, spuSaleAttrKeyId)
+        values
+        <foreach item="key" collection="list" separator=",">
+            <foreach item="value" collection="key.spuSaleAttrValueList" separator=",">
+                (#{value.id}, #{value.isChecked}, #{value.saleAttrValueName}, #{value.spuSaleAttrKeyId})
+            </foreach>
+        </foreach>
+    </insert>
+
+    <insert id="addSpuSaleAttrValueList">
+        insert into spu_sale_attr_value(id, isChecked, saleAttrValueName, spuSaleAttrKeyId)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.id}, #{item.isChecked}, #{item.saleAttrValueName}, #{item.spuSaleAttrKeyId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteSaleAttrValueListByIdNotInList">
+        delete from spu_sale_attr_value
+        where id not in
+        <foreach item="item" collection="undeleteSpuSaleAttrValueIdList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and spuSaleAttrKeyId in
+        <foreach item="item" collection="spuSaleAttrKeyIdList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSaleAttrValueBySpuSaleAttrKeyIdList">
+        delete from spu_sale_attr_value
+        where spuSaleAttrKeyId in
+        <foreach item="item" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

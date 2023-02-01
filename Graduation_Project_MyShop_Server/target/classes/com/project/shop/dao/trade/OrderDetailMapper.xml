@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.trade.OrderDetailMapper">
+
+    <insert id="addOrderDetailList">
+        insert into order_detail(id, orderId, skuId, skuName, imageUrl,
+                                 orderPrice, skuNum, hasStock)
+        values
+            <foreach collection="list" item="item" separator=",">
+                (#{item.id}, #{item.orderId}, #{item.skuId}, #{item.skuName}, #{item.imageUrl},
+                 #{item.orderPrice}, #{item.skuNum}, #{item.hasStock})
+            </foreach>
+    </insert>
+</mapper>

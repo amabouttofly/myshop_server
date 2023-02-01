@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.spu.SpuMapper">
+    <select id="getSpuById" resultMap="spuById">
+        select s.*,
+               sk.id as skId,
+               k.id as kid, k.saleAttrKeyName,
+               sv.id as svId, sv.isChecked, sv.saleAttrValueName,
+               si.id as siId, si.imageName, si.imageUrl
+        from spu_list s left outer join
+             spu_sale_attr_key sk on (sk.spuId = #{spuId})left outer join
+             sale_attr_key k on (sk.saleAttrKeyId = k.id) left outer join
+             spu_sale_attr_value sv on (sv.spuSaleAttrKeyId = sk.id) left outer join
+             spu_image si on (si.spuId = #{spuId})
+        where s.id = #{spuId}
+    </select>
+    <resultMap id="spuById" type="spu">
+        <id property="id" column="id"/>
+        <result property="spuName" column="spuName"/>
+        <result property="description" column="description"/>
+        <result property="category3Id" column="category3Id"/>
+        <result property="tmId" column="tmId"/>
+        <collection property="spuSaleAttrKeyList" javaType="ArrayList" ofType="com.project.shop.pojo.po.spu.SpuSaleAttrKey">
+            <id property="id" column="skId"/>
+            <result property="spuId" column="id"/>
+            <result property="saleAttrKeyId" column="kid"/>
+            <result property="saleAttrKeyName" column="saleAttrKeyName"/>
+            <collection property="spuSaleAttrValueList" javaType="ArrayList" ofType="spuSaleAttrValue">
+                <id property="id" column="svId"/>
+                <result property="isChecked" column="isChecked"/>
+                <result property="saleAttrValueName" column="saleAttrValueName"/>
+                <result property="spuSaleAttrKeyId" column="skId"/>
+            </collection>
+        </collection>
+        <collection property="spuImageList" ofType="spuImage">
+            <id property="id" column="siId"/>
+            <result property="spuId" column="id"/>
+            <result property="imageUrl" column="imageUrl"/>
+            <result property="imageName" column="imageName"/>
+        </collection>
+    </resultMap>
+
+    <update id="updateSpuById">
+        update spu_list
+        set spuName = #{spuName}, description = #{description},
+            category3Id = #{category3Id}, tmId = #{tmId}
+        where id = #{id}
+    </update>
+
+    <insert id="addSpu">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from spu_list
+        </selectKey>
+        insert into spu_list(id, spuName, description, category3Id, tmId)
+        values(#{id}, #{spuName}, #{description}, #{category3Id}, #{tmId})
+    </insert>
+</mapper>

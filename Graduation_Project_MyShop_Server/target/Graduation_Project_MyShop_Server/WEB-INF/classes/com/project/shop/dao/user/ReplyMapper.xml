@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.user.ReplyMapper">
+
+    <insert id="addReply">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from reply_list
+        </selectKey>
+        insert into reply_list(id, reply, status, replyTime, reviewId,
+                               userId, userName, userLevel, userAvatar,
+                               replyId, replyUserId, replyUserName)
+        values(#{id}, #{reply}, #{status}, #{replyTime}, #{reviewId},
+            #{userId}, #{userName}, #{userLevel}, #{userAvatar},
+            #{replyId}, #{replyUserId}, #{replyUserName})
+    </insert>
+    <select id="getReplyLimitListByReviewIdAndStatus" resultType="com.project.shop.pojo.po.user.Reply">
+        select *
+        from reply_list
+        where status = #{status}
+          and reviewId = #{reviewId}
+        order by replyTime asc
+        limit #{index}, #{size}
+    </select>
+    <select id="getReplyLimitListByReviewId" resultType="com.project.shop.pojo.po.user.Reply">
+        select *
+        from reply_list
+        where reviewId = #{reviewId}
+        order by replyTime asc
+            limit #{index}, #{size}
+    </select>
+</mapper>

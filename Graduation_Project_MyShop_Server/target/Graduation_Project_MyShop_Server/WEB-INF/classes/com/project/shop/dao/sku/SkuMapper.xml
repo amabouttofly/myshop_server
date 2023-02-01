@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.sku.SkuMapper">
+
+    <insert id="addSku">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from sku_list
+        </selectKey>
+        insert into sku_list(id, price, weight, category3Id, tmId, spuId,
+                             skuName, skuDesc, skuDefaultImage, isSale, createTime)
+        values(#{id}, #{price}, #{weight}, #{category3Id}, #{tmId}, #{spuId},
+            #{skuName}, #{skuDesc}, #{skuDefaultImage}, #{isSale}, #{createTime})
+    </insert>
+    <update id="update">
+        update sku_list
+        set price = #{price}, weight = #{weight}, skuName = #{skuName}, skuDesc = #{skuDesc},
+            skuDefaultImage = #{skuDefaultImage}
+        where id = #{id}
+    </update>
+    <select id="getSkuBySkuId" resultMap="skuInfo">
+        select s.*,
+               i.id as iid, i.spuImageId, i.isDefault, i.imageName, i.imageUrl,
+               sa.id as said, sa.saleAttrValueId, sa.saleAttrValueName, sa.saleAttrKeyId, sa.saleAttrKeyName,
+               a.id as aid, a.attrKeyId, a.attrKeyName, a.attrValueId, a.attrValueName
+        from sku_list s
+            left outer join sku_image i on (s.id = i.skuId)
+            left outer join sku_sale_attr_value sa on (s.id = sa.skuId)
+            left outer join sku_attr_value a on (s.id = a.skuId)
+        where s.id = #{skuId}
+    </select>
+    <resultMap id="skuInfo" type="sku">
+        <id property="id" column="id"/>
+        <result property="price" column="price"/>
+        <result property="weight" column="weight"/>
+        <result property="category3Id" column="category3Id"/>
+        <result property="tmId" column="tmId"/>
+        <result property="spuId" column="spuId"/>
+        <result property="skuName" column="skuName"/>
+        <result property="skuDesc" column="skuDesc"/>
+        <result property="skuDefaultImage" column="skuDefaultImage"/>
+        <result property="isSale" column="isSale"/>
+        <result property="createTime" column="createTime"/>
+        <collection property="skuImageList" ofType="skuImage">
+            <id property="id" column="iid"/>
+            <result property="spuImageId" column="spuImageId"/>
+            <result property="isDefault" column="isDefault"/>
+            <result property="skuId" column="id"/>
+            <result property="imageName" column="imageName"/>
+            <result property="imageUrl" column="imageUrl"/>
+        </collection>
+        <collection property="skuSaleAttrValueList" ofType="skuSaleAttrValue">
+            <id property="id" column="said"/>
+            <result property="skuId" column="id"/>
+            <result property="saleAttrKeyId" column="saleAttrKeyId"/>
+            <result property="saleAttrKeyName" column="saleAttrKeyName"/>
+            <result property="saleAttrValueId" column="saleAttrValueId"/>
+            <result property="saleAttrValueName" column="saleAttrValueName"/>
+        </collection>
+        <collection property="skuAttrValueList" ofType="skuAttrValue">
+            <id property="id" column="aid"/>
+            <result property="skuId" column="id"/>
+            <result property="attrKeyName" column="attrKeyName"/>
+            <result property="attrKeyId" column="attrKeyId"/>
+            <result property="attrValueName" column="attrValueName"/>
+            <result property="attrValueId" column="attrValueId"/>
+        </collection>
+    </resultMap>
+
+    <select id="getCategory3IdByKeyWord" resultType="java.lang.Integer">
+        select category3Id
+        from sku_list
+        where skuName like concat('%',#{keyWord},'%') and isSale = 1
+        group by category3Id
+        having count(*) >=all
+               (select count(*)
+                from sku_list
+                where skuName like concat('%',#{keyWord},'%') and isSale = 1
+                group by category3Id)
+                limit 0,1
+    </select>
+
+    <!--在order by中,输入的字段名不能加''符合,否则失效,因此用${}-->
+    <select id="getSkuListLimitPageWithOrder" resultType="com.project.shop.pojo.po.sku.Sku">
+        select distinct s.*
+        from sku_list s left outer join sku_attr_value sa on (s.id = sa.skuId)
+        where category3Id = #{category3Id} and isSale = 1
+        <if test="tmId != null">
+          and tmId = #{tmId}
+        </if>
+        <if test="skuAttrValueList != null">
+          and sa.attrValueId in
+            <foreach collection="skuAttrValueList" item="item"
+                     open="(" separator="," close=")">
+                #{item.attrValueId}
+            </foreach>
+          group by s.id
+          having count(*) = #{skuAttrValueNum}
+        </if>
+        <if test="order == 1">
+            order by ${orderOf} asc
+        </if>
+        <if test="order == 2">
+            order by ${orderOf} desc
+        </if>
+        limit #{index}, #{size}
+    </select>
+
+    <select id="getItemsTotalOfSkuListLimitPageWithOrder" resultType="java.lang.Integer">
+        <if test="skuAttrValueList != null">
+            select count(*)
+            from (select count(distinct s.id)
+                  from sku_list s left outer join sku_attr_value sa on (s.id = sa.skuId)
+                  where category3Id = #{category3Id} and isSale = 1
+                    <if test="tmId != null">
+                    and tmId = #{tmId}
+                    </if>
+                    and sa.attrValueId in
+                        <foreach collection="skuAttrValueList" item="item"
+                                 open="(" separator="," close=")">
+                        #{item.attrValueId}
+                        </foreach>
+                  group by s.id
+                  having count(*) = #{skuAttrValueNum}) as list
+        </if>
+        <if test="skuAttrValueList == null">
+            select count(distinct s.id)
+            from sku_list s left outer join sku_attr_value sa on (s.id = sa.skuId)
+            where category3Id = #{category3Id} and isSale = 1
+            <if test="tmId != null">
+                and tmId = #{tmId}
+            </if>
+        </if>
+    </select>
+    <select id="getSkuBySpuSaleAttrValueIds" resultType="com.project.shop.pojo.po.sku.Sku">
+        select s.*
+        from sku_list s, sku_sale_attr_value sa
+        where s.id = sa.skuId
+        and sa.saleAttrValueId in
+        <foreach collection="saleAttrValueIds" item="item"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        group by s.id
+        having count(*) = #{saleAttrValueIdsSize}
+    </select>
+</mapper>

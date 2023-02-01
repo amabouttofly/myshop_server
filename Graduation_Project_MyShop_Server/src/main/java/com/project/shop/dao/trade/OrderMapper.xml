@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.trade.OrderMapper">
+
+    <insert id="addOrder">
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+            select if(max(id) is null, 1, max(id) + 1) as newId from order_list
+        </selectKey>
+        insert into order_list(id, orderStatus, paymentWay, totalPrice, orderComment,
+                               createTime, expireTime, consignee, consigneeTel, deliveryAddress,
+                               userId)
+               values(#{id}, #{orderStatus}, #{paymentWay}, #{totalPrice}, #{orderComment},
+                   #{createTime}, #{expireTime}, #{consignee}, #{consigneeTel}, #{deliveryAddress},
+                   #{userId})
+    </insert>
+    <update id="updatePaidOrder">
+        update order_list
+        set orderStatus = #{orderStatus}, alipayTradeNo = #{alipayTradeNo}, payTime = #{payTime}
+        where id = #{id}
+    </update>
+
+    <select id="getOrderById" resultMap="orderWithOrderDetail">
+        select o.*,
+               d.id as did, d.skuId, d.skuName, d.imageUrl, d.orderPrice, d.skuNum, d.hasStock, d.hasReview
+        from order_list o, order_detail d
+        where o.id = d.orderId
+        and o.id = #{orderId}
+    </select>
+    <select id="getOrderListByUserId" resultMap="orderWithOrderDetail">
+        select o.*,
+               d.id as did, d.skuId, d.skuName, d.imageUrl, d.orderPrice, d.skuNum, d.hasStock, d.hasReview
+        from (select * from order_list where userId = #{userId} limit #{index}, #{size}) as o,
+             order_detail d
+        where o.id = d.orderId
+    </select>
+
+    <resultMap id="orderWithOrderDetail" type="com.project.shop.pojo.po.trade.Order">
+        <id property="id" column="id"/>
+        <result property="orderStatus" column="orderStatus"/>
+        <result property="paymentWay" column="paymentWay"/>
+        <result property="totalPrice" column="totalPrice"/>
+        <result property="orderComment" column="orderComment"/>
+        <result property="createTime" column="createTime"/>
+        <result property="expireTime" column="expireTime"/>
+        <result property="consignee" column="consignee"/>
+        <result property="consigneeTel" column="consigneeTel"/>
+        <result property="deliveryAddress" column="deliveryAddress"/>
+        <result property="userId" column="userId"/>
+        <collection property="orderDetailList" ofType="orderDetail">
+            <id property="id" column="did"/>
+            <result property="orderId" column="id"/>
+            <result property="skuId" column="skuId"/>
+            <result property="skuName" column="skuName"/>
+            <result property="imageUrl" column="imageUrl"/>
+            <result property="orderPrice" column="orderPrice"/>
+            <result property="skuNum" column="skuNum"/>
+            <result property="hasStock" column="hasStock"/>
+            <result property="hasReview" column="hasReview"/>
+        </collection>
+    </resultMap>
+</mapper>

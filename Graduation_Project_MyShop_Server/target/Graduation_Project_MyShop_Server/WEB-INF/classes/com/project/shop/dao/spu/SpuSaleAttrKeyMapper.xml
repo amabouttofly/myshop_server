@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.shop.dao.spu.SpuSaleAttrKeyMapper">
+
+    <insert id="addSpuSaleAttrKeyList">
+        insert into spu_sale_attr_key(id, saleAttrKeyId, spuId)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.id}, #{item.saleAttrKeyId}, #{item.spuId})
+        </foreach>
+    </insert>
+    <delete id="deleteSpuSaleAttrKeyListOfNoId">
+        delete from spu_sale_attr_key
+        where id not in
+        <foreach item="key" collection="spuSaleAttrKeyList"
+                 open="(" separator="," close=")">
+            #{key.id}
+        </foreach>
+        and spuId = #{id}
+    </delete>
+    <select id="getSpuSaleAttrKeyListWithValueById" resultMap="spuSaleAttrKeyWithValue">
+        select k.*, sk.saleAttrKeyName, v.id as vid, v.isChecked, v.saleAttrValueName
+        from spu_sale_attr_key k
+            left outer join sale_attr_key sk
+                on (k.saleAttrKeyId = sk.id)
+            left outer join spu_sale_attr_value v
+                on (k.id = v.spuSaleAttrKeyId)
+        where k.spuId = #{spuId}
+    </select>
+    <select id="getSaleAttrKeyListBySku" resultMap="spuSaleAttrKeyWithValue">
+        select k.*,
+               sk.saleAttrKeyName,
+               v.id as vid, v.isChecked, v.saleAttrValueName
+        from spu_sale_attr_key k
+            left outer join sale_attr_key sk on (k.saleAttrKeyId = sk.id)
+            left outer join spu_sale_attr_value v on (k.id = v.spuSaleAttrKeyId)
+        where k.spuId = #{spuId}
+        and v.id in
+            (select distinct skv.saleAttrValueId
+             from sku_sale_attr_value skv, sku_list s
+             where skv.skuId = s.id
+             and s.spuId = #{spuId} and s.isSale = 1)
+    </select>
+
+    <resultMap id="spuSaleAttrKeyWithValue" type="com.project.shop.pojo.po.spu.SpuSaleAttrKey">
+        <id property="id" column="id"/>
+        <result property="spuId" column="spuId"/>
+        <result property="saleAttrKeyId" column="saleAttrKeyId"/>
+        <result property="saleAttrKeyName" column="saleAttrKeyName"/>
+        <collection property="spuSaleAttrValueList" ofType="spuSaleAttrValue">
+            <id property="id" column="vid"/>
+            <result property="spuSaleAttrKeyId" column="id"/>
+            <result property="saleAttrValueName" column="saleAttrValueName"/>
+            <result property="isChecked" column="isChecked"/>
+        </collection>
+    </resultMap>
+
+
+</mapper>
